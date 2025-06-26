@@ -1,6 +1,8 @@
 package com.example.ecommerce.service;
 
 import com.example.ecommerce.dto.LoginRequest;
+import com.example.ecommerce.dto.LoginResponse;
+import com.example.ecommerce.dto.UserDTO;
 import com.example.ecommerce.model.User;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.util.JwtUtil;
@@ -8,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -29,7 +33,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -38,9 +42,9 @@ public class UserService {
         }
 
         String token = jwtUtil.generateToken(user.getEmail());
+        UserDTO userDTO = new UserDTO(user.getEmail(), user.getRoles());
         System.out.println("Generated JWT: " + token);
-
-        return token;
+        return new LoginResponse(token, userDTO);
     }
 
 }

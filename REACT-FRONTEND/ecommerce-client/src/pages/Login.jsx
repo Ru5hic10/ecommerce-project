@@ -13,8 +13,18 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", form);
-      localStorage.setItem("jwtToken", res.data); // token from backend
+      const response = await API.post("/auth/login", form);
+      const { token, user } = response.data;
+debugger;
+    console.log("TOKEN:", token);
+    console.log("USER:", user);
+
+    if (token && user) {
+      localStorage.setItem("jwtToken", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    } else {
+      console.error("Login response missing token or user");
+    }
       navigate("/products");
     } catch (err) {
       alert("Login failed");

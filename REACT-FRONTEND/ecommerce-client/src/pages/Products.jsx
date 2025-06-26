@@ -13,21 +13,39 @@ const Products = () => {
       });
   }, []);
 
+    const handleAddToCart = (product) => {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.push(product);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert("Product added to cart!");
+    };
+
   return (
     <div style={{ padding: "2rem" }}>
       <h2>🛍️ Product List</h2>
       {products.length === 0 ? (
         <p>No products available</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {products.map((product) => (
-            <li key={product.id} style={{ borderBottom: "1px solid #ccc", padding: "1rem 0" }}>
-              <strong>{product.name}</strong> <br />
-              ₹{product.price} <br />
-              <em>{product.description}</em>
-            </li>
-          ))}
-        </ul>
+        <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">All Products</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {products.map(product => (
+          <div key={product.id} className="border rounded-xl p-4 shadow">
+            <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover mb-2" />
+            <h2 className="text-lg font-semibold">{product.name}</h2>
+            <p className="text-sm">{product.description}</p>
+            <p className="text-green-600 font-bold mt-2">₹{product.price}</p>
+            <button
+            onClick={() => handleAddToCart(product)}
+            className="mt-2 bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
+            >
+            Add to Cart
+            </button>
+
+          </div>
+        ))}
+      </div>
+    </div>
       )}
     </div>
   );

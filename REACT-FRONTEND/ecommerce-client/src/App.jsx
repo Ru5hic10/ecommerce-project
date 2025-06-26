@@ -3,7 +3,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Products from "./pages/Products";
 import Home from "./pages/Home";
+import AddProductPage from "./pages/AddProduct";
 import Navbar from "./components/Navbar";
+import CartPage from "./pages/CartPage";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("jwtToken");
@@ -26,6 +28,8 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/admin/add-product" element={<AddProductPage />} />
       </Routes>
     </Router>
   );
