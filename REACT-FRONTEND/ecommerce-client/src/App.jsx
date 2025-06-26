@@ -1,9 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import './index.css';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Products from "./pages/Products";
 import Home from "./pages/Home";
+import AddProductPage from "./pages/AddProduct";
 import Navbar from "./components/Navbar";
+import CartPage from "./pages/CartPage";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
+import MyOrders from "./pages/MyOrders";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("jwtToken");
@@ -26,6 +31,10 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout-success" element={<CheckoutSuccess />} />
+        <Route path="/orders" element={<MyOrders />} />
+        <Route path="/admin/add-product" element={<AddProductPage />} />
       </Routes>
     </Router>
   );
