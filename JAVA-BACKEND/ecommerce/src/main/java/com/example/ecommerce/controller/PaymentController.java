@@ -46,7 +46,7 @@ public class PaymentController {
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:5173/success")  // 🔄 Replace as needed
+                .setSuccessUrl("http://localhost:5173/checkout-success?success=true")  // 🔄 Replace as needed
                 .setCancelUrl("http://localhost:5173/cancel")
                 .addAllLineItem(lineItems)
                 .build();

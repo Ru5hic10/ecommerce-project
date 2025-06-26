@@ -26,6 +26,8 @@ const Navbar = () => {
         
       )}
       <Link to="/cart" className="text-white px-3">Cart</Link>
+      <Link to="/orders">My Orders</Link>
+
         </>
       ) : (
         <>
