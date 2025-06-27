@@ -26,4 +26,18 @@ public class ProductController {
     public ResponseEntity<Product> addProduct(@RequestBody Product product) {
         return ResponseEntity.ok(productService.addProduct(product));
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.ok("Product deleted successfully");
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+        return productService.updateProduct(id, updatedProduct);
+    }
+
 }

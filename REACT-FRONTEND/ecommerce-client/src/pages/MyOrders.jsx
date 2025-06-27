@@ -13,39 +13,40 @@ const MyOrders = () => {
       })
       .catch((err) => {
         console.error("Failed to fetch orders", err);
-        alert("You are not authorized to view this page.");
+        alert("❌ You are not authorized to view this page.");
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <p>Loading orders...</p>;
+  if (loading) {
+    return (
+      <div className="container mt-5 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Fetching your orders...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">📦 My Orders</h1>
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">📦 My Orders</h2>
+
       {orders.length === 0 ? (
-        <p>You have no orders yet.</p>
+        <div className="alert alert-info text-center">You have no orders yet.</div>
       ) : (
-        <div className="space-y-4">
+        <div className="row row-cols-1 g-4">
           {orders.map((order) => (
-            <div
-              key={order.id}
-              className="border p-4 rounded-xl shadow bg-white"
-            >
-              <div className="flex justify-between">
-                <p>
-                  <strong>Order ID:</strong> {order.id}
-                </p>
-                <p>
-                  <strong>Status:</strong> {order.status}
-                </p>
+            <div className="col" key={order.id}>
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">Order ID: {order.id}</h5>
+                  <p className="card-text mb-1"><strong>Status:</strong> {order.status}</p>
+                  <p className="card-text mb-1"><strong>Total:</strong> ₹{order.amount}</p>
+                  <p className="card-text"><strong>Order Time:</strong> {order.orderTime}</p>
+                </div>
               </div>
-              <p>
-                <strong>Total:</strong> ₹{order.amount}
-              </p>
-              <p>
-                <strong>Order Time:</strong> {order.orderTime}
-              </p>
             </div>
           ))}
         </div>

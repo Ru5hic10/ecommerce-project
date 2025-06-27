@@ -20,24 +20,26 @@ const CheckoutSuccess = () => {
         amount: totalAmount,
       })
         .then(() => {
-          console.log("Order saved");
-          localStorage.removeItem("cart"); // ✅ clear cart after order saved
+          console.log("✅ Order saved");
+          localStorage.removeItem("cart");
         })
         .catch((err) => {
-          console.error("Failed to save order", err);
+          console.error("❌ Failed to save order", err);
         });
     }
   }, [location]);
 
   return (
-    <div className="p-4 text-center">
-      <h2 className="text-2xl font-bold text-green-600">🎉 Payment Successful!</h2>
-      <p>Your order has been placed successfully.</p>
+    <div className="container mt-5 d-flex flex-column align-items-center">
+      <div className="alert alert-success w-100 text-center" role="alert">
+        <h4 className="alert-heading">🎉 Payment Successful!</h4>
+        <p>Your order has been placed successfully. Thank you for shopping with us!</p>
+      </div>
       <button
         onClick={() => navigate("/")}
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+        className="btn btn-primary mt-3"
       >
-        Go to Home
+        Go to Home 🏠
       </button>
     </div>
   );

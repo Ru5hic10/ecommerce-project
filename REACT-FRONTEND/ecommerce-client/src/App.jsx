@@ -10,7 +10,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import MyOrders from "./pages/MyOrders";
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem("jwtToken");
+  const token = sessionStorage.getItem("jwtToken");
   return token ? children : <Navigate to="/login" />;
 };
 
