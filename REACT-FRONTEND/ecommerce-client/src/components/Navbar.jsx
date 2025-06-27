@@ -12,29 +12,76 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{ padding: "1rem", background: "#f5f5f5", marginBottom: "1rem" }}>
-      <Link to="/" style={{ marginRight: "1rem" }}>Home</Link>
-      {token ? (
-        <>
-          <Link to="/products" style={{ marginRight: "1rem" }}>Products</Link>
-          <button onClick={handleLogout}>Logout</button>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      <Link className="navbar-brand" to="/">
+        🛒 E-Shop
+      </Link>
 
-          {user?.roles?.includes("ADMIN") && (
-        <Link to="/admin/add-product" className="ml-4 text-yellow-400 mx-2">
-          ➕ Add Product
-        </Link>
-        
-      )}
-      <Link to="/cart" className="text-white px-3">Cart</Link>
-      <Link to="/orders">My Orders</Link>
+      <button
+        className="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
 
-        </>
-      ) : (
-        <>
-          <Link to="/login" style={{ marginRight: "1rem" }}>Login</Link>
-          <Link to="/register">Register</Link>
-        </>
-      )}
+      <div className="collapse navbar-collapse" id="navbarNav">
+        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+          {token && (
+            <>
+              <li className="nav-item">
+                <Link className="nav-link" to="/products">
+                  Products
+                </Link>
+              </li>
+
+              {user?.roles?.includes("ADMIN") && (
+                <li className="nav-item">
+                  <Link className="nav-link text-warning" to="/admin/add-product">
+                    ➕ Add Product
+                  </Link>
+                </li>
+              )}
+
+              <li className="nav-item">
+                <Link className="nav-link" to="/cart">
+                  Cart
+                </Link>
+              </li>
+
+              <li className="nav-item">
+                <Link className="nav-link" to="/orders">
+                  My Orders
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+
+        <ul className="navbar-nav">
+          {token ? (
+            <li className="nav-item">
+              <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+                Logout
+              </button>
+            </li>
+          ) : (
+            <>
+              <li className="nav-item me-2">
+                <Link className="btn btn-outline-light btn-sm" to="/login">
+                  Login
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="btn btn-light btn-sm" to="/register">
+                  Register
+                </Link>
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
     </nav>
   );
 };
