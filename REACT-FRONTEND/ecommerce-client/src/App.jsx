@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import './index.css';
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Products from "./pages/Products";
