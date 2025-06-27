@@ -1,16 +1,33 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { Modal, Button, Toast, ToastContainer } from "react-bootstrap";
+import {
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  CardMedia,
+  Typography,
+  Button,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+  Backdrop,
+  Container,
+} from "@mui/material";
 
 const Products = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
-  const [toast, setToast] = useState({ show: false, message: "", bg: "" });
+  const [toast, setToast] = useState({ show: false, message: "", severity: "success" });
   const [editLoading, setEditLoading] = useState(false);
-
 
   const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -23,7 +40,7 @@ const Products = () => {
       .then((res) => setProducts(res.data))
       .catch((err) => {
         console.error("Failed to fetch products", err);
-        setToast({ show: true, message: "Failed to load products", bg: "danger" });
+        setToast({ show: true, message: "Failed to load products", severity: "error" });
       });
   };
 
@@ -31,19 +48,18 @@ const Products = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     cart.push(product);
     localStorage.setItem("cart", JSON.stringify(cart));
-    setToast({ show: true, message: "✅ Product added to cart!", bg: "success" });
+    setToast({ show: true, message: "✅ Product added to cart!", severity: "success" });
   };
 
   const handleDelete = async () => {
     try {
-      setEditLoading(true); 
-      setTimeout(() => {}, 1000);
+      setEditLoading(true);
       await API.delete(`/products/${productToDelete.id}`);
-      setToast({ show: true, message: "🗑️ Product removed", bg: "warning" });
+      setToast({ show: true, message: "🗑️ Product removed", severity: "warning" });
       setProducts(products.filter((p) => p.id !== productToDelete.id));
     } catch (err) {
       console.error("Delete failed", err);
-      setToast({ show: true, message: "❌ Failed to delete", bg: "danger" });
+      setToast({ show: true, message: "❌ Failed to delete", severity: "error" });
     } finally {
       setShowConfirm(false);
       setEditLoading(false);
@@ -56,114 +72,111 @@ const Products = () => {
   };
 
   const handleEdit = (product) => {
-  setEditLoading(true); // show loader
-  setTimeout(() => {
-    navigate("/admin/add-product", { state: { product } });
-  }, 500);
-};
-
+    setEditLoading(true);
+    setTimeout(() => {
+      navigate("/admin/add-product", { state: { product } });
+    }, 500);
+  };
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4 text-center">🛍️ Product List</h2>
+    <Container maxWidth="lg" sx={{ mt: 5 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        🍭 Product List
+      </Typography>
 
       {products.length === 0 ? (
-        <p className="text-center">No products available</p>
+        <Typography align="center" color="text.secondary">
+          No products available
+        </Typography>
       ) : (
-        <div className="row">
+        <Grid container spacing={3}>
           {products.map((product) => (
-            <div key={product.id} className="col-md-4 mb-4">
-              <div className="card h-100 shadow-sm">
-                <img
-                  src={product.imageUrl}
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+              <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                <CardMedia
+                  component="img"
+                  image={product.imageUrl}
                   alt={product.name}
-                  className="card-img-top"
-                  style={{ height: "200px", objectFit: "cover" }}
+                  height="200"
+                  sx={{ objectFit: "cover" }}
                 />
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{product.name}</h5>
-                  <p className="card-text flex-grow-1">{product.description}</p>
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="text-success fw-bold">₹{product.price}</span>
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {product.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {product.description}
+                  </Typography>
+                  <Typography variant="subtitle1" color="success.main" sx={{ mt: 1 }}>
+                    ₹{product.price}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: "space-between", px: 2, pb: 2 }}>
+                  <Button variant="contained" size="small" onClick={() => handleAddToCart(product)}>
+                    Add to Cart
+                  </Button>
                   {user?.roles?.includes("ADMIN") && (
-                    <div className="d-flex justify-content-between">
-                      <button
-                        className="btn btn-outline-danger btn-sm"
+                    <>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
                         onClick={() => confirmDelete(product)}
                       >
                         Remove
-                      </button>
-                      <button
-                        className="btn btn-warning btn-sm me-2"
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="warning"
                         onClick={() => handleEdit(product)}
                       >
                         Edit
-                      </button>
-                    </div>
+                      </Button>
+                    </>
                   )}
-                </div>
-              </div>
-            </div>
+                </CardActions>
+              </Card>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       )}
 
-      {/* 🔐 Confirmation Modal */}
-      <Modal show={showConfirm} onHide={() => setShowConfirm(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Delete</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete <strong>{productToDelete?.name}</strong>?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowConfirm(false)}>
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirm} onClose={() => setShowConfirm(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete <strong>{productToDelete?.name}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowConfirm(false)} color="secondary">
             Cancel
           </Button>
-          <Button variant="danger" onClick={handleDelete}>
+          <Button onClick={handleDelete} color="error" variant="contained">
             Delete
           </Button>
-        </Modal.Footer>
-      </Modal>
+        </DialogActions>
+      </Dialog>
 
-      {/* ✅ Toast Notification */}
-      <ToastContainer position="top-end" className="position-fixed p-3">
-        <Toast
-          bg={toast.bg}
-          onClose={() => setToast({ ...toast, show: false })}
-          show={toast.show}
-          delay={2500}
-          autohide
-        >
-          <Toast.Body className="text-white">{toast.message}</Toast.Body>
-        </Toast>
-      </ToastContainer>
-      {editLoading && (
-        <div className="overlay-blur d-flex justify-content-center align-items-center">
-          <div className="pulse-loader">
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
-      )}
-      {/* {editLoading && (
-      <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex justify-content-center align-items-center z-3">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    )} */}
+      {/* Snackbar Notification */}
+      <Snackbar
+        open={toast.show}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, show: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert severity={toast.severity} variant="filled" onClose={() => setToast({ ...toast, show: false })}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
 
-
-    </div>
+      {/* Loading Backdrop */}
+      <Backdrop open={editLoading} sx={{ color: "#fff", zIndex: 1300 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    </Container>
   );
 };
 

@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  CircularProgress,
+  Grid,
+  Chip,
+  Divider
+} from "@mui/material";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -20,38 +30,45 @@ const MyOrders = () => {
 
   if (loading) {
     return (
-      <div className="container mt-5 text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Fetching your orders...</p>
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress color="primary" />
+        <Typography sx={{ ml: 2 }}>Fetching your orders...</Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">📦 My Orders</h2>
+    <Container maxWidth="md" sx={{ mt: 5 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        📦 My Orders
+      </Typography>
 
       {orders.length === 0 ? (
-        <div className="alert alert-info text-center">You have no orders yet.</div>
+        <Typography align="center" variant="body1" color="text.secondary">
+          You have no orders yet.
+        </Typography>
       ) : (
-        <div className="row row-cols-1 g-4">
+        <Grid container spacing={3}>
           {orders.map((order) => (
-            <div className="col" key={order.id}>
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h5 className="card-title">Order ID: {order.id}</h5>
-                  <p className="card-text mb-1"><strong>Status:</strong> {order.status}</p>
-                  <p className="card-text mb-1"><strong>Total:</strong> ₹{order.amount}</p>
-                  <p className="card-text"><strong>Order Time:</strong> {order.orderTime}</p>
-                </div>
-              </div>
-            </div>
+            <Grid item xs={12} key={order.id}>
+              <Paper elevation={3} sx={{ p: 3 }}>
+                <Box mb={1} display="flex" justifyContent="space-between">
+                  <Typography variant="subtitle1">Order ID: {order.id}</Typography>
+                  <Chip label={order.status} color="success" size="small" />
+                </Box>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="body1">
+                  <strong>Total:</strong> ₹{order.amount}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Order Time:</strong> {order.orderTime}
+                </Typography>
+              </Paper>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       )}
-    </div>
+    </Container>
   );
 };
 

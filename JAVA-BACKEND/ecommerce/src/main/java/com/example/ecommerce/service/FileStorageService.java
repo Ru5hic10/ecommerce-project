@@ -15,11 +15,15 @@ public class FileStorageService {
     private String uploadDir;
 
     public String storeFile(MultipartFile file) throws IOException {
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-        Path targetLocation = Paths.get(uploadDir).toAbsolutePath().resolve(fileName);
-        Files.createDirectories(targetLocation.getParent());
-        Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-        return "/images/" + fileName;
+        try{
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path targetLocation = Paths.get(uploadDir).toAbsolutePath().resolve(fileName);
+            Files.createDirectories(targetLocation.getParent());
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/" + fileName;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

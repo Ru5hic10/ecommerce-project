@@ -99,7 +99,13 @@
 			<artifactId>dotenv-java</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-
+		<!-- For AWS S3 -->
+		<!--
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        -->
 
 	</dependencies>
 

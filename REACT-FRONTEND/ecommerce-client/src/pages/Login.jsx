@@ -1,21 +1,42 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { Spinner, Toast, ToastContainer } from "react-bootstrap";
+import {
+  Avatar,
+  Box,
+  Button,
+  Container,
+  Paper,
+  TextField,
+  Typography,
+  CircularProgress,
+  Snackbar,
+  Alert
+} from "@mui/material";
+import LockIcon from "@mui/icons-material/Lock";
 
 const Login = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", variant: "" });
+  const [toast, setToast] = useState({ show: false, message: "", severity: "error" });
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+
+    // Live validation
+    if (name === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
+      setErrors(prev => ({ ...prev, email: "Invalid email address" }));
+    } else {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const showToast = (message, variant = "danger") => {
-    setToast({ show: true, message, variant });
-    setTimeout(() => setToast({ show: false, message: "", variant: "" }), 3000);
+  const showToast = (message, severity = "error") => {
+    setToast({ show: true, message, severity });
+    setTimeout(() => setToast({ show: false, message: "", severity: "error" }), 3000);
   };
 
   const handleSubmit = async (e) => {
@@ -25,9 +46,11 @@ const Login = () => {
       return showToast("Both fields are required");
     }
 
+    if (errors.email) return showToast("Please correct the form");
+
     try {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const response = await API.post("/auth/login", form);
       const { token, user } = response.data;
@@ -36,62 +59,76 @@ const Login = () => {
         sessionStorage.setItem("jwtToken", token);
         sessionStorage.setItem("user", JSON.stringify(user));
         showToast("✅ Logged in successfully!", "success");
-        setTimeout(() => navigate("/products"), 1000); // Redirect with slight delay
+        setTimeout(() => navigate("/products"), 1000);
       } else {
-        showToast("Something went wrong!", "danger");
+        showToast("Something went wrong!");
       }
     } catch (err) {
-      showToast("Login failed. Check your email or password.", "danger");
+      showToast("Login failed. Check your email or password.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "500px" }}>
-      <div className="card shadow p-4">
-        <h2 className="text-center mb-4">🔐 Login</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input
+    <Container maxWidth="sm">
+      <Box mt={8}>
+        <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
+          <Avatar sx={{ bgcolor: "primary.main", mx: "auto", mb: 2 }}>
+            <LockIcon />
+          </Avatar>
+          <Typography variant="h5" gutterBottom>
+            Login to Your Account
+          </Typography>
+
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Email"
               name="email"
               type="email"
-              className="form-control"
-              placeholder="Enter email"
+              fullWidth
+              margin="normal"
+              variant="outlined"
               onChange={handleChange}
+              error={!!errors.email}
+              helperText={errors.email}
               required
             />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input
+            <TextField
+              label="Password"
               name="password"
               type="password"
-              className="form-control"
-              placeholder="Enter password"
+              fullWidth
+              margin="normal"
+              variant="outlined"
               onChange={handleChange}
               required
             />
-          </div>
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" /> Logging in...
-              </>
-            ) : (
-              "Login"
-            )}
-          </button>
-        </form>
-      </div>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading || !form.email || !form.password}
+              sx={{ mt: 2 }}
+              startIcon={loading ? null : <LockIcon />}
+            >
+              {loading ? <CircularProgress size={20} /> : "Login"}
+            </Button>
+          </form>
+        </Paper>
+      </Box>
 
-      <ToastContainer position="top-end" className="p-3">
-        <Toast bg={toast.variant} show={toast.show}>
-          <Toast.Body className="text-white">{toast.message}</Toast.Body>
-        </Toast>
-      </ToastContainer>
-    </div>
+      <Snackbar
+        open={toast.show}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, show: false })}
+      >
+        <Alert severity={toast.severity} variant="filled" sx={{ width: "100%" }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

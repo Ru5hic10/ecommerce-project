@@ -1,6 +1,14 @@
 import { useEffect } from "react";
 import API from "../api/axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Button,
+  Alert,
+  Container,
+  Paper,
+} from "@mui/material";
 
 const CheckoutSuccess = () => {
   const location = useLocation();
@@ -26,22 +34,37 @@ const CheckoutSuccess = () => {
         .catch((err) => {
           console.error("❌ Failed to save order", err);
         });
-    }
+    } else {
+      navigate("/cart"); 
+      return;
+      }
   }, [location]);
 
   return (
-    <div className="container mt-5 d-flex flex-column align-items-center">
-      <div className="alert alert-success w-100 text-center" role="alert">
-        <h4 className="alert-heading">🎉 Payment Successful!</h4>
-        <p>Your order has been placed successfully. Thank you for shopping with us!</p>
-      </div>
-      <button
-        onClick={() => navigate("/")}
-        className="btn btn-primary mt-3"
-      >
-        Go to Home 🏠
-      </button>
-    </div>
+    <Container maxWidth="sm">
+      <Box mt={8} display="flex" flexDirection="column" alignItems="center">
+        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
+          <Alert severity="success" variant="filled">
+            <Typography variant="h5" gutterBottom>
+              🎉 Payment Successful!
+            </Typography>
+            <Typography variant="body1">
+              Your order has been placed successfully. Thank you for shopping with us!
+            </Typography>
+          </Alert>
+
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 3 }}
+            onClick={() => navigate("/products")}
+          >
+            See More Products
+          </Button>
+        </Paper>
+      </Box>
+    </Container>
   );
 };
 

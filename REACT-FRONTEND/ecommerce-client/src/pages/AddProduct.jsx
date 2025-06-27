@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { Spinner, Toast, ToastContainer } from "react-bootstrap";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  Paper,
+  InputLabel
+} from "@mui/material";
 
 const AddProductPage = () => {
   const [product, setProduct] = useState({
@@ -10,140 +21,211 @@ const AddProductPage = () => {
     price: "",
     imageUrl: ""
   });
+  const [imagePreview, setImagePreview] = useState("");
+  const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({ show: false, message: "", severity: "success" });
+  const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
   const editProduct = location.state?.product;
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", variant: "" });
 
   useEffect(() => {
     if (editProduct) {
       setProduct(editProduct);
+      setImagePreview(editProduct.imageUrl);
       setIsEditing(true);
     }
   }, [editProduct]);
 
-  const handleChange = (e) => {
-    setProduct(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const validate = () => {
+    const errs = {};
+    if (!product.name) errs.name = "Product name is required";
+    if (!product.description) errs.description = "Description is required";
+    if (!imageFile && !product.imageUrl) errs.imageUrl = "Product image is required";
+    if (!product.price || isNaN(product.price) || Number(product.price) <= 0) {
+      errs.price = "Price must be a positive number";
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const showToast = (message, variant = "success") => {
-    setToast({ show: true, message, variant });
-    setTimeout(() => {
-      setToast({ show: false, message: "", variant: "" });
-    }, 3000);
+  const handleChange = (e) => {
+    setProduct((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // const handleImageUpload = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setProduct((prev) => ({ ...prev, imageUrl: reader.result }));
+  //       setImagePreview(reader.result);
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+
+  const showToast = (message, severity = "success") => {
+    setToast({ show: true, message, severity });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // ✅ Validation
-    if (!product.name || !product.description || !product.price || !product.imageUrl) {
-      return showToast("All fields are required", "danger");
-    }
-
-    if (isNaN(product.price) || Number(product.price) <= 0) {
-      return showToast("Price must be a positive number", "danger");
-    }
-
+    if (!validate()) return;
+    debugger;
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // 🕐 Simulated delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      let uploadedImageUrl = product.imageUrl;
+
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+      const uploadRes = await API.post("/upload-image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      uploadedImageUrl = uploadRes.data;
+    }
+
+    const payload = { ...product, imageUrl: uploadedImageUrl };
 
       if (isEditing) {
-        await API.put(`/products/${product.id}`, product);
-        showToast("✅ Product updated successfully!", "success");
+        await API.put(`/products/${product.id}`, payload);
+        showToast("✅ Product updated successfully!");
       } else {
-        await API.post("/products", product);
-        showToast("✅ Product added successfully!", "success");
+        await API.post("/products", payload);
+        showToast("✅ Product added successfully!");
         setProduct({ name: "", description: "", price: "", imageUrl: "" });
+        setImagePreview("");
       }
 
-      setTimeout(() => navigate("/products"), 1000); // Smooth redirect
+      setTimeout(() => navigate("/products"), 1500);
     } catch (err) {
       console.error(err);
-      showToast("❌ Failed to submit. Unauthorized or error occurred.", "danger");
+      showToast("❌ Failed to submit. Unauthorized or error occurred.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="w-100" style={{ maxWidth: "500px" }}>
-        <h2 className="text-xl font-bold mb-4">
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 5 }}>
+        <Typography variant="h5" gutterBottom>
           {isEditing ? "Edit Product" : "Add New Product"}
-        </h2>
+        </Typography>
 
-        <form onSubmit={handleSubmit} className="border p-4 rounded shadow-sm bg-light">
-          <div className="mb-3">
-            <label className="form-label">Product Name</label>
-            <input
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <fieldset disabled={loading} style={{ border: 0, padding: 0, margin: 0 }}>
+            <TextField
+              label="Product Name"
               name="name"
               value={product.name}
               onChange={handleChange}
-              className="form-control"
+              fullWidth
+              margin="normal"
               required
+              autoFocus
+              error={Boolean(errors.name)}
+              helperText={errors.name}
             />
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label">Description</label>
-            <input
+            <TextField
+              label="Description"
               name="description"
               value={product.description}
               onChange={handleChange}
-              className="form-control"
+              fullWidth
+              margin="normal"
               required
+              error={Boolean(errors.description)}
+              helperText={errors.description}
             />
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label">Price (₹)</label>
-            <input
+            <TextField
+              label="Price (₹)"
               name="price"
               type="number"
               value={product.price}
               onChange={handleChange}
-              className="form-control"
-              min="1"
+              fullWidth
+              margin="normal"
               required
+              error={Boolean(errors.price)}
+              helperText={errors.price}
             />
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label">Image URL</label>
-            <input
-              name="imageUrl"
-              value={product.imageUrl}
-              onChange={handleChange}
-              className="form-control"
-              required
-            />
-          </div>
+             <Button
+              variant="outlined"
+              component="label"
+              fullWidth
+              sx={{ mt: 2 }}
+            >
+              Upload Image
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    setImageFile(file);
+                    setPreviewUrl(URL.createObjectURL(file));
+                  }
+                }}
+              />
+            </Button>
 
-          <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-            {loading ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                {isEditing ? "Updating..." : "Adding..."}
-              </>
-            ) : (
-              isEditing ? "Update Product" : "Add Product"
-            )}
-          </button>
-        </form>
+              {previewUrl && (
+                <Box mt={2} textAlign="center">
+                  <img src={previewUrl} alt="Preview" style={{ maxWidth: "100%", height: 200, objectFit: "contain" }} />
+                </Box>
+              )}
+              {errors.imageUrl && (
+              <Typography color="error" variant="body2" mt={1}>
+                {errors.imageUrl}
+              </Typography>
+              )}
 
-        {/* Toast Notification */}
-        <ToastContainer position="top-end" className="position-fixed p-3">
-          <Toast bg={toast.variant} show={toast.show} onClose={() => setToast({ ...toast, show: false })} delay={3000} autohide>
-            <Toast.Body className="text-white">{toast.message}</Toast.Body>
-          </Toast>
-        </ToastContainer>
-      </div>
-    </div>
+
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 3 }}
+            >
+              {loading ? (
+                <>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  {isEditing ? "Updating..." : "Adding..."}
+                </>
+              ) : isEditing ? "Update Product" : "Add Product"}
+            </Button>
+          </fieldset>
+        </Box>
+      </Paper>
+
+      <Snackbar
+        open={toast.show}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, show: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          severity={toast.severity}
+          variant="filled"
+          onClose={() => setToast({ ...toast, show: false })}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 
