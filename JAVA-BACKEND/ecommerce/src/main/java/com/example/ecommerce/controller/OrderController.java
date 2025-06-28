@@ -1,5 +1,7 @@
 package com.example.ecommerce.controller;
 
+import com.example.ecommerce.dto.OrderDTO;
+import com.example.ecommerce.dto.OrderItemDTO;
 import com.example.ecommerce.model.Order;
 import com.example.ecommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,25 +23,20 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody Map<String, Object> payload, Principal principal) {
         String email = principal.getName();
-        List<String> productNames = (List<String>) payload.get("products");
+
+        List<Map<String, Object>> products = (List<Map<String, Object>>) payload.get("products");
         double amount = Double.parseDouble(payload.get("amount").toString());
 
-        return ResponseEntity.ok(orderService.saveOrder(email, productNames, amount));
+        return ResponseEntity.ok(orderService.saveOrderWithItems(email, products, amount));
     }
+
 
     @GetMapping
-    public ResponseEntity<?> getMyOrders() {
-        // Get the authenticated user's email from the security context
+    public ResponseEntity<List<OrderDTO>> getMyOrders() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        // Fetch orders from DB
-        List<Order> orders = orderService.getOrdersByEmail(email);
-
-        return ResponseEntity.ok(orders);
+        List<OrderDTO> orderDTOs = orderService.getOrdersByEmailAsDTO(email);
+        return ResponseEntity.ok(orderDTOs);
     }
-    @GetMapping("/user")
-    public ResponseEntity<List<Order>> getUserOrders(Principal principal) {
-        String email = principal.getName();
-        return ResponseEntity.ok(orderService.getOrdersByEmail(email));
-    }
+
+
 }

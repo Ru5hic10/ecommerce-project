@@ -76,10 +76,6 @@ const Navbar = () => {
         >
           🛒 E-Shop
         </Typography>
-
-        {/* Desktop Navigation */}
-        {token ? (
-          <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 2, mr: 3 }}>
             <Button
               color="inherit"
               startIcon={<InventoryIcon />}
@@ -88,18 +84,6 @@ const Navbar = () => {
             >
               Products
             </Button>
-
-            {user?.roles?.includes("ADMIN") && (
-              <Button
-                color="warning"
-                startIcon={<AddIcon />}
-                component={Link}
-                to="/admin/add-product"
-              >
-                Add Product
-              </Button>
-            )}
-
             <Button
               color="inherit"
               component={Link}
@@ -112,6 +96,23 @@ const Navbar = () => {
             >
               Cart
             </Button>
+        {/* Desktop Navigation */}
+        {token ? (
+          <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 2, mr: 3 }}>
+            
+
+            {user?.roles?.includes("ADMIN") && (
+              <Button
+                color="warning"
+                startIcon={<AddIcon />}
+                component={Link}
+                to="/admin/add-product"
+              >
+                Add Product
+              </Button>
+            )}
+
+            
 
             <Button color="inherit" component={Link} to="/orders">
               My Orders
@@ -190,6 +191,12 @@ const Navbar = () => {
       </MenuItem>,
       <MenuItem key="register" component={Link} to="/register" onClick={handleMenuClose}>
         <PersonAddIcon fontSize="small" sx={{ mr: 1 }} /> Register
+      </MenuItem>,
+      <MenuItem key="products" component={Link} to="/products" onClick={handleMenuClose}>
+        Products
+      </MenuItem>,
+      <MenuItem key="cart" component={Link} to="/cart" onClick={handleMenuClose}>
+        Cart
       </MenuItem>
     ]}
 

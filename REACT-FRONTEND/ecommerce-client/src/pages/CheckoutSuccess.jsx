@@ -21,10 +21,12 @@ const CheckoutSuccess = () => {
     if (paymentSuccess === "true") {
       const cart = JSON.parse(localStorage.getItem("cart")) || [];
       const totalAmount = cart.reduce((sum, item) => sum + item.price, 0);
-      const productNames = cart.map((item) => item.name);
-
+      const productItems = cart.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity || 1
+      }));
       API.post("/orders", {
-        products: productNames,
+        products: productItems,
         amount: totalAmount,
       })
         .then(() => {

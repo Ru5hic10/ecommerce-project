@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import {
@@ -39,6 +39,13 @@ const Login = () => {
     setTimeout(() => setToast({ show: false, message: "", severity: "error" }), 3000);
   };
 
+  useEffect(() => {
+    if (sessionStorage.getItem("showLoginToast")) {
+      setToast({ show: true, message: "🔒 Please login to proceed to checkout", severity: "info" });
+      sessionStorage.removeItem("showLoginToast");
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,7 +66,10 @@ const Login = () => {
         sessionStorage.setItem("jwtToken", token);
         sessionStorage.setItem("user", JSON.stringify(user));
         showToast("✅ Logged in successfully!", "success");
-        setTimeout(() => navigate("/products"), 1000);
+        const redirectTo = sessionStorage.getItem("postLoginRedirect") || "/products";
+        sessionStorage.removeItem("postLoginRedirect");
+
+        setTimeout(() => navigate(redirectTo), 1000);
       } else {
         showToast("Something went wrong!");
       }

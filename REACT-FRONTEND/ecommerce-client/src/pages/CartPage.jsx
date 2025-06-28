@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CheckoutButton from "./CheckOutButton";
 import {
   Box,
@@ -23,6 +24,7 @@ const CartPage = () => {
   const [cart, setCart] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -49,6 +51,7 @@ const CartPage = () => {
     if (updatedCart[index].quantity < 1) updatedCart[index].quantity = 1;
     updateCart(updatedCart);
   };
+
 
   const total = cart.reduce((sum, p) => sum + p.price * (p.quantity || 1), 0);
 

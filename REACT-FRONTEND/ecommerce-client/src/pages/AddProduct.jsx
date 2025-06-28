@@ -11,15 +11,18 @@ import {
   Alert,
   CircularProgress,
   Paper,
-  InputLabel
+  MenuItem,
+  IconButton
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 const AddProductPage = () => {
   const [product, setProduct] = useState({
     name: "",
     description: "",
     price: "",
-    imageUrl: ""
+    imageUrl: "",
+    category: ""
   });
   const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
@@ -32,6 +35,14 @@ const AddProductPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const editProduct = location.state?.product;
+
+  const categories = [
+    "electronics",
+    "mens-clothing",
+    "womens-clothing",
+    "shoes",
+    "kitchen"
+  ];
 
   useEffect(() => {
     if (editProduct) {
@@ -49,6 +60,7 @@ const AddProductPage = () => {
     if (!product.price || isNaN(product.price) || Number(product.price) <= 0) {
       errs.price = "Price must be a positive number";
     }
+    if (!product.category) errs.category = "Category is required";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -57,18 +69,6 @@ const AddProductPage = () => {
     setProduct((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // const handleImageUpload = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setProduct((prev) => ({ ...prev, imageUrl: reader.result }));
-  //       setImagePreview(reader.result);
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
   const showToast = (message, severity = "success") => {
     setToast({ show: true, message, severity });
   };
@@ -76,23 +76,22 @@ const AddProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    debugger;
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       let uploadedImageUrl = product.imageUrl;
 
-    if (imageFile) {
-      const formData = new FormData();
-      formData.append("file", imageFile);
-      const uploadRes = await API.post("/upload-image", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      uploadedImageUrl = uploadRes.data;
-    }
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append("file", imageFile);
+        const uploadRes = await API.post("/upload-image", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        uploadedImageUrl = uploadRes.data;
+      }
 
-    const payload = { ...product, imageUrl: uploadedImageUrl };
+      const payload = { ...product, imageUrl: uploadedImageUrl };
 
       if (isEditing) {
         await API.put(`/products/${product.id}`, payload);
@@ -100,8 +99,10 @@ const AddProductPage = () => {
       } else {
         await API.post("/products", payload);
         showToast("✅ Product added successfully!");
-        setProduct({ name: "", description: "", price: "", imageUrl: "" });
+        setProduct({ name: "", description: "", price: "", imageUrl: "", category: "" });
         setImagePreview("");
+        setPreviewUrl(null);
+        setImageFile(null);
       }
 
       setTimeout(() => navigate("/products"), 1500);
@@ -111,6 +112,30 @@ const AddProductPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        showToast("❌ Only image files allowed", "error");
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        showToast("❌ Image must be under 2MB", "error");
+        return;
+      }
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+      setImagePreview(""); // clear previous image if uploading new
+    }
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+    setImagePreview("");
+    setProduct((prev) => ({ ...prev, imageUrl: "" }));
   };
 
   return (
@@ -160,46 +185,55 @@ const AddProductPage = () => {
               helperText={errors.price}
             />
 
-             <Button
-              variant="outlined"
-              component="label"
+            <TextField
+              label="Category"
+              name="category"
+              select
+              value={product.category}
+              onChange={handleChange}
               fullWidth
-              sx={{ mt: 2 }}
+              margin="normal"
+              required
+              error={Boolean(errors.category)}
+              helperText={errors.category}
             >
+              <MenuItem value="" disabled>Select Category</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat.replace("-", " ").toUpperCase()}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Button variant="outlined" component="label" fullWidth sx={{ mt: 2 }}>
               Upload Image
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    setImageFile(file);
-                    setPreviewUrl(URL.createObjectURL(file));
-                  }
-                }}
-              />
+              <input type="file" hidden accept="image/*" onChange={handleFileChange} />
             </Button>
 
-              {previewUrl && (
-                <Box mt={2} textAlign="center">
-                  <img src={previewUrl} alt="Preview" style={{ maxWidth: "100%", height: 200, objectFit: "contain" }} />
-                </Box>
-              )}
-              {errors.imageUrl && (
+            {(previewUrl || imagePreview) && (
+              <Box mt={2} textAlign="center" position="relative">
+                <img
+                  src={previewUrl || imagePreview}
+                  alt="Preview"
+                  style={{ maxWidth: "100%", height: 200, objectFit: "contain" }}
+                />
+                <IconButton
+                  size="small"
+                  onClick={clearImage}
+                  sx={{ position: "absolute", top: 0, right: 0, bgcolor: "white" }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
+
+            {errors.imageUrl && (
               <Typography color="error" variant="body2" mt={1}>
                 {errors.imageUrl}
               </Typography>
-              )}
+            )}
 
-
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 3 }}
-            >
+            <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 3 }}>
               {loading ? (
                 <>
                   <CircularProgress size={20} sx={{ mr: 1 }} />

@@ -19,15 +19,22 @@ import {
   CircularProgress,
   Backdrop,
   Container,
+  Tabs,
+  Tab,
+  Box,
+  TextField,
 } from "@mui/material";
+import NoMatch from "../assets/react.svg"; // Add your placeholder image here
 
 const Products = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
+  const [groupedProducts, setGroupedProducts] = useState({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", severity: "success" });
   const [editLoading, setEditLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const user = JSON.parse(sessionStorage.getItem("user"));
 
@@ -37,7 +44,15 @@ const Products = () => {
 
   const fetchProducts = () => {
     API.get("/products")
-      .then((res) => setProducts(res.data))
+      .then((res) => {
+        const grouped = res.data.reduce((acc, product) => {
+          const category = product.category || "Others";
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(product);
+          return acc;
+        }, {});
+        setGroupedProducts(grouped);
+      })
       .catch((err) => {
         console.error("Failed to fetch products", err);
         setToast({ show: true, message: "Failed to load products", severity: "error" });
@@ -56,7 +71,7 @@ const Products = () => {
       setEditLoading(true);
       await API.delete(`/products/${productToDelete.id}`);
       setToast({ show: true, message: "🗑️ Product removed", severity: "warning" });
-      setProducts(products.filter((p) => p.id !== productToDelete.id));
+      fetchProducts();
     } catch (err) {
       console.error("Delete failed", err);
       setToast({ show: true, message: "❌ Failed to delete", severity: "error" });
@@ -78,19 +93,52 @@ const Products = () => {
     }, 500);
   };
 
+  const categories = Object.keys(groupedProducts);
+  const selectedProducts = groupedProducts[categories[selectedCategory]] || [];
+  const filteredProducts = selectedProducts.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Container maxWidth="lg" sx={{ mt: 5 }}>
       <Typography variant="h4" align="center" gutterBottom>
-        🍭 Product List
+        🛒 Product List by Category
       </Typography>
 
-      {products.length === 0 ? (
-        <Typography align="center" color="text.secondary">
-          No products available
-        </Typography>
+      {/* Category Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Tabs
+          value={selectedCategory}
+          onChange={(e, newVal) => setSelectedCategory(newVal)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          {categories.map((cat) => (
+            <Tab key={cat} label={cat.replace('-', ' ').toUpperCase()} />
+          ))}
+        </Tabs>
+      </Box>
+
+      {/* Search Field */}
+      <TextField
+        label="Search Products"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      {/* Category-wise Products */}
+      {filteredProducts.length === 0 ? (
+        <Box textAlign="center" mt={4}>
+          <img src={NoMatch} alt="No Match" style={{ maxWidth: "250px", marginBottom: 16 }} />
+          <Typography color="text.secondary">No matching products found</Typography>
+        </Box>
       ) : (
         <Grid container spacing={3}>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
               <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                 <CardMedia

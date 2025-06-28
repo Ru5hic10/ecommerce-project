@@ -50,22 +50,42 @@ const MyOrders = () => {
       ) : (
         <Grid container spacing={3}>
           {orders.map((order) => (
-            <Grid item xs={12} key={order.id}>
-              <Paper elevation={3} sx={{ p: 3 }}>
-                <Box mb={1} display="flex" justifyContent="space-between">
-                  <Typography variant="subtitle1">Order ID: {order.id}</Typography>
-                  <Chip label={order.status} color="success" size="small" />
-                </Box>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="body1">
-                  <strong>Total:</strong> ₹{order.amount}
+        <Grid item xs={12} key={order.id}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Box mb={1} display="flex" justifyContent="space-between">
+            <Typography variant="subtitle1">Order ID: {order.id}</Typography>
+            <Chip label={order.status} color="success" size="small" />
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <strong>Order Time:</strong> {new Date(order.orderTime).toLocaleString()}
+          </Typography>
+
+          <Divider sx={{ my: 1 }} />
+          {order.items.map((item, idx) => (
+            <Box key={idx} display="flex" alignItems="center" mb={2}>
+              <img
+                src={item.imageUrl}
+                alt={item.productName}
+                style={{ width: 80, height: 80, objectFit: "contain", marginRight: 16 }}
+              />
+              <Box>
+                <Typography variant="subtitle1">{item.productName}</Typography>
+                <Typography variant="body2">
+                  ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Order Time:</strong> {order.orderTime}
-                </Typography>
-              </Paper>
-            </Grid>
+              </Box>
+            </Box>
           ))}
+
+          <Divider sx={{ mt: 2, mb: 1 }} />
+          <Typography variant="body1">
+            <strong>Total:</strong> ₹{order.amount}
+          </Typography>
+        </Paper>
+      </Grid>
+
+))}
+
         </Grid>
       )}
     </Container>

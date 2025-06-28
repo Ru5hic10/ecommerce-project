@@ -9,10 +9,11 @@ import CartPage from "./pages/CartPage";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import MyOrders from "./pages/MyOrders";
 
-const PrivateRoute = ({ children }) => {
+const PrivateRouteForProduct = ({ children }) => {
   const token = sessionStorage.getItem("jwtToken");
   return token ? children : <Navigate to="/login" />;
 };
+
 
 function App() {
   return (
@@ -25,9 +26,7 @@ function App() {
         <Route
           path="/products"
           element={
-            <PrivateRoute>
               <Products />
-            </PrivateRoute>
           }
         />
         <Route path="/cart" element={<CartPage />} />

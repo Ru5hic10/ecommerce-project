@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 
@@ -8,12 +9,19 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const CheckoutButton = ({ cartItems }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ open: false, message: "", severity: "error" });
+  const navigate = useNavigate();
 
   const handleCheckout = async () => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
     if (cart.length === 0) {
       return setToast({ open: true, message: "🛒 Your cart is empty!", severity: "warning" });
+    }
+    const token = sessionStorage.getItem("jwtToken");
+    if (!token) {
+      sessionStorage.setItem("postLoginRedirect", "/cart");
+      sessionStorage.setItem("showLoginToast", "true");
+      navigate("/login");
     }
 
     const formattedCart = cart.map((item) => ({
