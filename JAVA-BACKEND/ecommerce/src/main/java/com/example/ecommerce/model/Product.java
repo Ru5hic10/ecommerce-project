@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "products")
 public class Product {
 
     @Id
@@ -18,5 +19,8 @@ public class Product {
     private String name;
     private String description;
     private double price;
+    private String imageUrl;
+
+    private String category;
 }
 
