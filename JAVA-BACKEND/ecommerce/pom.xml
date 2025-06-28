@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>com.stripe</groupId>
 			<artifactId>stripe-java</artifactId>
-			<version>24.0.0</version>
+			<version>24.8.0</version>
 		</dependency>
 
 		<!-- JWT -->
@@ -99,7 +99,13 @@
 			<artifactId>dotenv-java</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-
+		<!-- For AWS S3 -->
+		<!--
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        -->
 
 	</dependencies>
 

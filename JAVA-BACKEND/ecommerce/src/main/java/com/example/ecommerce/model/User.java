@@ -5,6 +5,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -17,7 +20,7 @@ public class User {
     private Long id;
 
     @NotBlank
-    private String name = "Jon";
+    private String name;
 
     @NotBlank
     @Email
@@ -27,5 +30,7 @@ public class User {
     @NotBlank
     private String password;
 
-    private String role = "USER";
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roles = new ArrayList<>();
+
 }
